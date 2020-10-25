@@ -13,6 +13,7 @@ class GameScene: SKScene {
     var blockSize: CGFloat!
     var grid: Grid!
     
+    var board: [[Int]]!
     var blocked: [(row: Int, col: Int)] = [(row: Int, col: Int)]()
     
     var player = 1
@@ -21,10 +22,17 @@ class GameScene: SKScene {
         blockSize = frame.height / CGFloat(rows)
         grid = Grid(blockSize: blockSize, rows: rows, cols: columns)!
         grid.position = CGPoint(x: frame.midX, y: frame.midY)
+        
+        board = Array(repeating: Array(repeating: 0, count: columns), count: columns)
+        print(board)
+        
         addChild(grid)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        if player == 0 {
+//            return
+//        }
         let location = touches.first?.location(in: view)
         
         if location!.x >= blockSize/2 && location!.x <= (frame.width - blockSize/2) {
@@ -64,4 +72,9 @@ class GameScene: SKScene {
         return gamePiece
     }
     
+    
+    private func winningMove(piece: (row: Int, col: Int)) -> Bool {
+        
+        return true
+    }
 }
