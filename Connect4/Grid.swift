@@ -45,7 +45,7 @@ class Grid:SKSpriteNode {
             bezierPath.addLine(to: CGPoint(x: size.width, y: y))
         }
         SKColor.white.setStroke()
-        bezierPath.lineWidth = 1.0
+        bezierPath.lineWidth = 2.0
         bezierPath.stroke()
         context.addPath(bezierPath.cgPath)
         let image = UIGraphicsGetImageFromCurrentImageContext()
