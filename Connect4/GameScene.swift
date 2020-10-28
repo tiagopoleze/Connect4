@@ -14,9 +14,6 @@ class GameScene: SKScene {
     var grid: Grid!
     
     var board: [[Int]]!
-    var blocked: [(row: Int, col: Int)] = [(row: Int, col: Int)]()
-    
-    var player = 1
     
     let blockedPiece = -1
     let emptyPiece = 0
@@ -39,12 +36,12 @@ class GameScene: SKScene {
         //        }
         let location = touches.first?.location(in: view)
         if location!.x >= blockSize/2 && location!.x <= (frame.width - blockSize/2) {
-            let gamePiece = createPiece(location: location!)
+            let gamePiece = createPiece(location: location!, player: playerPice)
             grid.addChild(gamePiece)
         }
     }
     
-    private func createPiece(location: CGPoint) -> SKSpriteNode {
+    private func createPiece(location: CGPoint, player: Int) -> SKSpriteNode {
         let color: UIColor = player == 1 ? .red : .blue
         let size = CGSize(width: blockSize, height: blockSize)
         let gamePiece = SKSpriteNode(color: color, size: size)
@@ -52,7 +49,7 @@ class GameScene: SKScene {
         if isValidPosition(col: initialBlock.col) {
             if let row = getNextOpenRow(col: initialBlock.col) {
                 dropPiece(row: row, col: initialBlock.col, piece: playerPice)
-                gamePiece.position = grid.gridPosition(row: row, col: initialBlock.col)
+                gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
             }
         }
         return gamePiece
