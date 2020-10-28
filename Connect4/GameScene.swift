@@ -50,6 +50,9 @@ class GameScene: SKScene {
             if let row = getNextOpenRow(col: initialBlock.col) {
                 dropPiece(row: row, col: initialBlock.col, piece: playerPice)
                 gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
+                if winningMove(piece: player) {
+                    print("ganhou")
+                }
             }
         }
         return gamePiece
@@ -162,9 +165,10 @@ class GameScene: SKScene {
             var score = 0
             
             // Score center column
+            
             let centerArray = board.reduce([Int]()) { result, array in
-                for i in array {
-                    return result + [i]
+                for i in 0..<Int(columns/2) {
+                    return result + [array[i]]
                 }
                 return result
             }
@@ -179,6 +183,11 @@ class GameScene: SKScene {
             return score
         }
     
+    
+//    ## Score center column
+//        center_array = [int(i) for i in list(board[:, COLUMN_COUNT // 2])]
+//        center_count = center_array.count(piece)
+//        score += center_count * 3
     
     //
     //        ## Score Horizontal
