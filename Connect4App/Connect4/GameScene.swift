@@ -161,41 +161,49 @@ class GameScene: SKScene {
         return score
     }
     
-        private func scorePosition(piece: Int, piece_opp: Int) -> Int {
-            var score = 0
-            
-            // Score center column
-            
-            let centerArray = board.reduce([Int]()) { result, array in
-                for i in 0..<Int(columns/2) {
-                    return result + [array[i]]
-                }
-                return result
+    private func scorePosition(piece: Int, piece_opp: Int) -> Int {
+        var score = 0
+        
+        // Score center column
+        score += scoreCenterColumn(piece: piece)
+        
+        // Score Horizontal
+        score += scoreHorinzontal()
+        
+        return score
+    }
+    
+    private func scoreCenterColumn(piece: Int) -> Int {
+        
+        var actualIndex = 0
+        let colPerTwo = Int(columns/2)
+        
+        let centerArray = board.reduce([Int]()) { result, array in
+            if actualIndex <= colPerTwo {
+                actualIndex += 1
+                return result + array
             }
-            let centerCount = centerArray.reduce(0) { result, index in
-                index == piece ? result + 1 : result
-            }
-            
-            score += centerCount * 3
-            
-            
-            
-            return score
+            return result
         }
+        return centerArray.reduce(0) { result, number in
+            if number == piece { return result + 1 }
+            return result
+        } * 3
+    }
     
-    
-//    ## Score center column
-//        center_array = [int(i) for i in list(board[:, COLUMN_COUNT // 2])]
-//        center_count = center_array.count(piece)
-//        score += center_count * 3
+    private func scoreHorinzontal() -> Int {
+//        for r in range(ROW_COUNT):
+//          row_array = [int(i) for i in list(board[r, :])]
+//          for c in range(COLUMN_COUNT - 3):
+//              window = row_array[c:c + WINDOW_LENGTH]
+//              score += evaluate_window_negamax(window, piece, piece_opp)
+        
+        return 0
+    }
     
     //
-    //        ## Score Horizontal
-    //        for r in range(ROW_COUNT):
-    //            row_array = [int(i) for i in list(board[r, :])]
-    //            for c in range(COLUMN_COUNT - 3):
-    //                window = row_array[c:c + WINDOW_LENGTH]
-    //                score += evaluate_window_negamax(window, piece, piece_opp)
+    
+    //
     //
     //        ## Score Vertical
     //        for c in range(COLUMN_COUNT):
