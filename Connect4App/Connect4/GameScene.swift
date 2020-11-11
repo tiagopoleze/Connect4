@@ -15,11 +15,9 @@ class GameScene: SKScene {
     
     var board: [[Int]]!
     
-    let blockedPiece = -1
     let emptyPiece = 0
     let playerPice = 1
     let aiPiece = 2
-    let windowLenth = 4
     
     override func didMove(to view: SKView) {
         blockSize = frame.height / CGFloat(rows)
@@ -71,7 +69,7 @@ class GameScene: SKScene {
     }
     
     private func isValidPosition(internalBoard: [[Int]], col: Int) -> Bool {
-        return internalBoard[rows-1][col] == 0 && internalBoard[rows-1][col] != blockedPiece
+        return internalBoard[rows-1][col] == 0
     }
     
     private func getNextOpenRow(internalBoard: [[Int]], col: Int) -> Int? {
