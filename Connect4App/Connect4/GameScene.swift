@@ -46,11 +46,11 @@ class GameScene: SKScene {
         let size = CGSize(width: blockSize, height: blockSize)
         let gamePiece = SKSpriteNode(color: color, size: size)
         let initialBlock = getBlock(with: location)
-        if isValidPosition(col: initialBlock.col) {
-            if let row = getNextOpenRow(col: initialBlock.col) {
+        if isValidPosition(internalBoard: board, col: initialBlock.col) {
+            if let row = getNextOpenRow(internalBoard: board, col: initialBlock.col) {
                 dropPiece(row: row, col: initialBlock.col, piece: playerPice)
                 gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
-                if winningMove(piece: player) {
+                if winningMove(internalBoard: board, piece: player) {
                     print("ganhou")
                 }
             }
@@ -69,13 +69,13 @@ class GameScene: SKScene {
         board[row][col] = piece
     }
     
-    private func isValidPosition(col: Int) -> Bool {
-        return board[rows-1][col] == 0 && board[rows-1][col] != blockedPiece
+    private func isValidPosition(internalBoard: [[Int]], col: Int) -> Bool {
+        return internalBoard[rows-1][col] == 0 && internalBoard[rows-1][col] != blockedPiece
     }
     
-    private func getNextOpenRow(col: Int) -> Int? {
+    private func getNextOpenRow(internalBoard: [[Int]], col: Int) -> Int? {
         for r in 0..<rows {
-            if board[r][col] == 0 {
+            if internalBoard[r][col] == 0 {
                 return r
             }
         }
@@ -83,11 +83,11 @@ class GameScene: SKScene {
     }
     
     
-    private func winningMove(piece: Int) -> Bool {
+    private func winningMove(internalBoard: [[Int]], piece: Int) -> Bool {
         // Check horizontal locations for win
         for c in 0..<columns-3 {
             for r in 0..<rows {
-                if board[r][c] == piece && board[r][c+1] == piece && board[r][c+2] == piece && board[r][c+3] == piece {
+                if internalBoard[r][c] == piece && internalBoard[r][c+1] == piece && internalBoard[r][c+2] == piece && internalBoard[r][c+3] == piece {
                     return true
                 }
             }
@@ -96,7 +96,7 @@ class GameScene: SKScene {
         // Check vertical locations for win
         for c in 0..<columns {
             for r in 0..<rows-3 {
-                if board[r][c] == piece && board[r+1][c] == piece && board[r+2][c] == piece && board[r+3][c] == piece {
+                if internalBoard[r][c] == piece && internalBoard[r+1][c] == piece && internalBoard[r+2][c] == piece && internalBoard[r+3][c] == piece {
                     return true
                 }
             }
@@ -105,7 +105,7 @@ class GameScene: SKScene {
         // Check positively sloped diaganols
         for c in 0..<columns-3 {
             for r in 0..<rows-3 {
-                if board[r][c] == piece && board[r+1][c+1] == piece && board[r+2][c+2] == piece && board[r+3][c+3] == piece {
+                if internalBoard[r][c] == piece && internalBoard[r+1][c+1] == piece && internalBoard[r+2][c+2] == piece && internalBoard[r+3][c+3] == piece {
                     return true
                 }   
             }
@@ -114,7 +114,7 @@ class GameScene: SKScene {
         // Check negatively sloped diaganols
         for c in 0..<columns-3 {
             for r in 3..<rows {
-                if board[r][c] == piece && board[r-1][c+1] == piece && board[r-2][c+2] == piece && board[r-3][c+3] == piece {
+                if internalBoard[r][c] == piece && internalBoard[r-1][c+1] == piece && internalBoard[r-2][c+2] == piece && internalBoard[r-3][c+3] == piece {
                     return true
                 }
             }
@@ -161,24 +161,30 @@ class GameScene: SKScene {
         return score
     }
     
-    private func scorePosition(piece: Int, piece_opp: Int) -> Int {
+    private func scorePosition(internalBoard: [[Int]],piece: Int, piece_opp: Int) -> Int {
         var score = 0
         
         // Score center column
-        score += scoreCenterColumn(piece: piece)
+        score += scoreCenterColumn(internalBoard: internalBoard, piece: piece)
         
         // Score Horizontal
-        score += scoreHorinzontal()
+        score += scoreHorinzontal(internalBoard: internalBoard)
+        
+        // Score Vertical
+        score += scoreVertical(internalBoard: internalBoard)
+        
+        // Score positive sloped diagonal
+        score += scorePositiveSlopedDiagonal(internalBoard: internalBoard)
         
         return score
     }
     
-    private func scoreCenterColumn(piece: Int) -> Int {
+    private func scoreCenterColumn(internalBoard: [[Int]], piece: Int) -> Int {
         
         var actualIndex = 0
         let colPerTwo = Int(columns/2)
         
-        let centerArray = board.reduce([Int]()) { result, array in
+        let centerArray = internalBoard.reduce([Int]()) { result, array in
             if actualIndex <= colPerTwo {
                 actualIndex += 1
                 return result + array
@@ -191,7 +197,7 @@ class GameScene: SKScene {
         } * 3
     }
     
-    private func scoreHorinzontal() -> Int {
+    private func scoreHorinzontal(internalBoard: [[Int]]) -> Int {
 //        for r in range(ROW_COUNT):
 //          row_array = [int(i) for i in list(board[r, :])]
 //          for c in range(COLUMN_COUNT - 3):
@@ -201,75 +207,75 @@ class GameScene: SKScene {
         return 0
     }
     
-    //
-    
-    //
-    //
-    //        ## Score Vertical
-    //        for c in range(COLUMN_COUNT):
-    //            col_array = [int(i) for i in list(board[:, c])]
-    //            for r in range(ROW_COUNT - 3):
-    //                window = col_array[r:r + WINDOW_LENGTH]
-    //                score += evaluate_window_negamax(window, piece, piece_opp)
-    //
-    //        ## Score posiive sloped diagonal
-    //        for r in range(ROW_COUNT - 3):
-    //            for c in range(COLUMN_COUNT - 3):
-    //                window = [board[r + i][c + i] for i in range(WINDOW_LENGTH)]
-    //                score += evaluate_window_negamax(window, piece, piece_opp)
-    //
-    //        for r in range(ROW_COUNT - 3):
-    //            for c in range(COLUMN_COUNT - 3):
-    //                window = [board[r + 3 - i][c + i] for i in range(WINDOW_LENGTH)]
-    //                score += evaluate_window_negamax(window, piece, piece_opp)
-    //
-    //        return score
-    //        }
-    
-    private func isTerminalNode(piece: Int, piece_opp: Int) -> Bool {
-        return winningMove(piece: piece) || winningMove(piece: piece_opp) || getValidLocations().count == 0
+    private func scoreVertical(internalBoard: [[Int]]) -> Int {
+        
+//        for c in range(COLUMN_COUNT):
+//            col_array = [int(i) for i in list(board[:, c])]
+//            for r in range(ROW_COUNT - 3):
+//                window = col_array[r:r + WINDOW_LENGTH]
+//                score += evaluate_window_negamax(window, piece, piece_opp)
+        
+        return 0
     }
     
-    private func getValidLocations() -> [Int] {
+    private func scorePositiveSlopedDiagonal(internalBoard: [[Int]]) -> Int {
+//        for r in range(ROW_COUNT - 3):
+//            for c in range(COLUMN_COUNT - 3):
+//                window = [board[r + i][c + i] for i in range(WINDOW_LENGTH)]
+//                score += evaluate_window_negamax(window, piece, piece_opp)
+//
+//        for r in range(ROW_COUNT - 3):
+//            for c in range(COLUMN_COUNT - 3):
+//                window = [board[r + 3 - i][c + i] for i in range(WINDOW_LENGTH)]
+//                score += evaluate_window_negamax(window, piece, piece_opp)
+        return 0
+    }
+    
+    private func isTerminalNode(internalBoard: [[Int]], piece: Int, piece_opp: Int) -> Bool {
+        return winningMove(internalBoard: internalBoard, piece: piece) || winningMove(internalBoard: internalBoard, piece: piece_opp) || getValidLocations(internalBoard: internalBoard).count == 0
+    }
+    
+    private func getValidLocations(internalBoard: [[Int]]) -> [Int] {
         var validLocations = [Int]()
         for col in 0..<columns {
-            if isValidPosition(col: col) {
+            if isValidPosition(internalBoard: internalBoard, col: col) {
                 validLocations.append(col)
             }
         }
         return validLocations
     }
-    
-    //    def negamax(board, piece, piece_opp, depth, alpha, beta):
-    //        valid_locations = get_valid_locations(board)
-    //        is_terminal = is_terminal_node_negamax(board, piece, piece_opp)
-    //        if depth == 0 or is_terminal:
-    //            if is_terminal:
-    //                if winning_move(board, piece):
-    //                    return (None, 100000000000000)
-    //                elif winning_move(board, piece_opp):
-    //                    return (None, -10000000000000)
-    //                else:  # Game is over, no more valid moves
-    //                    return (None, 0)
-    //            else:  # Depth is zero
-    //                return (None, score_position_negamax(board, piece, piece_opp))
-    //
-    //        value = -math.inf
-    //        column = random.choice(valid_locations)
-    //        for col in valid_locations:
-    //            row = get_next_open_row(board, col)
-    //            b_copy = board.copy()
-    //            drop_piece(b_copy, row, col, piece)
-    //            new_score = -negamax(b_copy, piece_opp, piece, depth - 1, alpha, beta)[1]
-    //            if new_score > value:
-    //                value = new_score
-    //                column = col
-    //            if poda_alpha_beta:
-    //                alpha = max(alpha, value)
-    //                if alpha >= beta:
-    //                    break
-    //        return column, value
-    
+    func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, detph: Int, alpha: Int, beta: Int) -> Bool {
+//    def negamax(board, piece, piece_opp, depth, alpha, beta):
+//        valid_locations = get_valid_locations(board)
+//        is_terminal = is_terminal_node_negamax(board, piece, piece_opp)
+//        if depth == 0 or is_terminal:
+//            if is_terminal:
+//                if winning_move(board, piece):
+//                    return (None, 100000000000000)
+//                elif winning_move(board, piece_opp):
+//                    return (None, -10000000000000)
+//                else:  # Game is over, no more valid moves
+//                    return (None, 0)
+//            else:  # Depth is zero
+//                return (None, score_position_negamax(board, piece, piece_opp))
+//
+//        value = -math.inf
+//        column = random.choice(valid_locations)
+//        for col in valid_locations:
+//            row = get_next_open_row(board, col)
+//            b_copy = board.copy()
+//                drop_piece(b_copy, row, col, piece)
+//            new_score = -negamax(b_copy, piece_opp, piece, depth - 1, alpha, beta)[1]
+//            if new_score > value:
+//                value = new_score
+//                column = col
+//            if poda_alpha_beta:
+//                alpha = max(alpha, value)
+//                if alpha >= beta:
+//                    break
+//        return column, value
+        return true
+    }
     
     //    for i in range(partidas_jogo):
     //        board = create_board()
