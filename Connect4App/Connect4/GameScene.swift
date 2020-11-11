@@ -161,14 +161,14 @@ class GameScene: SKScene {
         return score
     }
     
-    private func scorePosition(internalBoard: [[Int]],piece: Int, piece_opp: Int) -> Int {
+    private func scorePosition(internalBoard: [[Int]],piece: Int, pieceOpp: Int) -> Int {
         var score = 0
         
         // Score center column
         score += scoreCenterColumn(internalBoard: internalBoard, piece: piece)
         
         // Score Horizontal
-        score += scoreHorinzontal(internalBoard: internalBoard)
+        score += scoreHorinzontal(internalBoard: internalBoard, piece: piece, pieceOpp: pieceOpp)
         
         // Score Vertical
         score += scoreVertical(internalBoard: internalBoard)
@@ -197,14 +197,35 @@ class GameScene: SKScene {
         } * 3
     }
     
-    private func scoreHorinzontal(internalBoard: [[Int]]) -> Int {
+    private func scoreHorinzontal(internalBoard: [[Int]], piece: Int, pieceOpp: Int) -> Int {
+        var actualIndexRow = 0
+        var actualColIndex = 0
+        var window: [Int] = []
+        
+        for i in 0..<rows {
+            let rowArray = internalBoard.reduce([Int]()) { result, array in
+                if i == actualIndexRow {
+                    return result + array
+                }
+                return result
+            }
+            actualIndexRow += 1
+            
+            for (index, number) in rowArray.enumerated() {
+                if index == actualColIndex {
+                    window.append(number)
+                }
+            }
+            actualColIndex += 1
+            
+        }
 //        for r in range(ROW_COUNT):
 //          row_array = [int(i) for i in list(board[r, :])]
 //          for c in range(COLUMN_COUNT - 3):
 //              window = row_array[c:c + WINDOW_LENGTH]
 //              score += evaluate_window_negamax(window, piece, piece_opp)
         
-        return 0
+        return evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
     }
     
     private func scoreVertical(internalBoard: [[Int]]) -> Int {
