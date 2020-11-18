@@ -35,13 +35,13 @@ class GameScene: SKScene {
         //        }
         let location = touches.first?.location(in: view)
         if location!.x >= blockSize/2 && location!.x <= (frame.width - blockSize/2) {
-            let gamePiece = createPiece(location: location!, player: playerPice)
+            let gamePiece = createPiece(location: location!, piece: playerPice)
             grid.addChild(gamePiece)
         }
     }
     
-    private func createPiece(location: CGPoint, player: Int) -> SKSpriteNode {
-        let color: UIColor = player == 1 ? .red : .blue
+    private func createPiece(location: CGPoint, piece: Int) -> SKSpriteNode {
+        let color: UIColor = piece == 1 ? .red : .blue
         let size = CGSize(width: blockSize, height: blockSize)
         let gamePiece = SKSpriteNode(color: color, size: size)
         let initialBlock = getBlock(with: location)
@@ -49,7 +49,8 @@ class GameScene: SKScene {
             if let row = getNextOpenRow(internalBoard: board, col: initialBlock.col) {
                 dropPiece(row: row, col: initialBlock.col, piece: playerPice)
                 gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
-                if winningMove(internalBoard: board, piece: player) {
+                
+                if winningMove(internalBoard: board, piece: piece) {
                     print("ganhou")
                 }
             }
