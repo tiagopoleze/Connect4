@@ -1,32 +1,22 @@
 import Foundation
 
-let rows = 6
 let columns = 7
-let blockedPiece = -1
-let emptyPiece = 0
-let playerPice = 1
-let aiPiece = 2
+let rows = 6
 
-var board: [[Int]] = Array(repeating: Array(repeating: playerPice, count: columns), count: columns)
+var board = Array(repeating: Array(repeating: 0, count: columns), count: rows)
+board[0][0] = 1
+board[0][1] = 2
+board[0][2] = 3
+board[0][3] = 40
+board[1][3] = 41
+board[2][3] = 42
+board[3][3] = 43
+board[4][3] = 44
+board[5][3] = 45
+board[0][4] = 5
+board[0][5] = 6
+board[0][6] = 7
 
-
-private func scorePosition(piece: Int, piece_opp: Int) -> Int {
-    var score = 0
-    
-    let colPerTwo = Int(columns/2)
-    
-    let centerArray = board.reduce([Int]()) { result, array in
-    print(array)
-        print(array[colPerTwo])
-        
-        return result
-    }
-    
-    let centerCount = centerArray.reduce(0) { result, index in
-        index == piece ? result + 1 : result
-    }
-    score += centerCount * 3
-    
-    return score
+for array in board {
+    print(array[Int(columns/2)])
 }
-print(scorePosition(piece: 1, piece_opp: 2))
