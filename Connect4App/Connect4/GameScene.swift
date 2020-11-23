@@ -274,7 +274,6 @@ class GameScene: SKScene {
                 break
             }
         }
-        
         return (column, value)
     }
 }
