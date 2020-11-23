@@ -17,6 +17,25 @@ board[0][4] = 5
 board[0][5] = 6
 board[0][6] = 7
 
-for array in board {
-    print(array[Int(columns/2)])
+
+//for r in 0...rows - 4 {
+//    for c in 0...columns - 4 {
+//        var window = [Int]()
+//        for i in 0..<4 {
+//            window.append(board[r + i][c + i])
+//        }
+//        print(window)
+//        window = []
+//    }
+//}
+
+for r in 0...rows - 4 {
+    for c in 0...columns - 4 {
+        var window = [Int]()
+        for i in 0..<4 {
+            window.append(board[r+3-i][c+i])
+        }
+        print(window)
+        window = []
+    }
 }

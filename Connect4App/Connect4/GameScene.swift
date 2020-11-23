@@ -14,6 +14,7 @@ class GameScene: SKScene {
     var grid: Grid!
     
     var board: [[Int]]!
+    let windowLength = 4
     
     let emptyPiece = 0
     let playerPice = 1
@@ -47,7 +48,7 @@ class GameScene: SKScene {
         let initialBlock = getBlock(with: location)
         if isValidPosition(internalBoard: board, col: initialBlock.col) {
             if let row = getNextOpenRow(internalBoard: board, col: initialBlock.col) {
-                dropPiece(row: row, col: initialBlock.col, piece: playerPice)
+                board = dropPiece(internalBoard: board, row: row, col: initialBlock.col, piece: playerPice)
                 gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
                 
                 if winningMove(internalBoard: board, piece: piece) {
@@ -65,8 +66,10 @@ class GameScene: SKScene {
     }
     
     
-    private func dropPiece(row: Int, col: Int, piece: Int) {
-        board[row][col] = piece
+    private func dropPiece(internalBoard: [[Int]], row: Int, col: Int, piece: Int) -> [[Int]] {
+        var internalBoard = internalBoard.map { $0 }
+        internalBoard[row][col] = piece
+        return internalBoard
     }
     
     private func isValidPosition(internalBoard: [[Int]], col: Int) -> Bool {
@@ -191,41 +194,87 @@ class GameScene: SKScene {
         }
         score += centerCount * 3
         
+        // Score Horizontal
+        internalBoard.forEach { array in
+            for c in 0...columns-3 {
+                let window = Array(array[c...c+windowLength])
+                score += evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
+            }
+        }
+        
+        // Score Vertical
+        var colArray = [Int]()
+        for c in 0...columns-1 {
+            for r in 0...rows-1 {
+                colArray.append(internalBoard[r][c])
+            }
+            for r in 0...rows-4 {
+                let window = Array(colArray[r...r+3])
+                score += evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
+            }
+            colArray = []
+        }
+        
+        // Score positive sloped diagonal
+        for r in 0...rows - 4 {
+            for c in 0...columns - 4 {
+                var window = [Int]()
+                for i in 0..<4 {
+                    window.append(internalBoard[r + i][c + i])
+                }
+                score += evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
+                window = []
+            }
+        }
+        for r in 0...rows - 4 {
+            for c in 0...columns - 4 {
+                var window = [Int]()
+                for i in 0..<4 {
+                    window.append(internalBoard[r+3-i][c+i])
+                }
+                score += evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
+                window = []
+            }
+        }
+        
         return score
     }
     
-//    def score_position_negamax(board, piece, piece_opp):
-//        score = 0
-//
-//        ## Score center column
-//        center_array = [int(i) for i in list(board[:, COLUMN_COUNT // 2])]
-//        center_count = center_array.count(piece)
-//        score += center_count * 3
-//
-//        ## Score Horizontal
-//        for r in range(ROW_COUNT):
-//            row_array = [int(i) for i in list(board[r, :])]
-//            for c in range(COLUMN_COUNT - 3):
-//                window = row_array[c:c + WINDOW_LENGTH]
-//                score += evaluate_window_negamax(window, piece, piece_opp)
-//
-//        ## Score Vertical
-//        for c in range(COLUMN_COUNT):
-//            col_array = [int(i) for i in list(board[:, c])]
-//            for r in range(ROW_COUNT - 3):
-//                window = col_array[r:r + WINDOW_LENGTH]
-//                score += evaluate_window_negamax(window, piece, piece_opp)
-//
-//        ## Score posiive sloped diagonal
-//        for r in range(ROW_COUNT - 3):
-//            for c in range(COLUMN_COUNT - 3):
-//                window = [board[r + i][c + i] for i in range(WINDOW_LENGTH)]
-//                score += evaluate_window_negamax(window, piece, piece_opp)
-//
-//        for r in range(ROW_COUNT - 3):
-//            for c in range(COLUMN_COUNT - 3):
-//                window = [board[r + 3 - i][c + i] for i in range(WINDOW_LENGTH)]
-//                score += evaluate_window_negamax(window, piece, piece_opp)
-//
-//        return score
+    private func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, depth: Int, alpha: Int, beta: Int) -> (Int?, Int) {
+        var alpha = alpha
+        let validLocation = getValidLocations(internalBoard: internalBoard)
+        let isTerminal = isTerminalNode(internalBoard: internalBoard, piece: piece, piece_opp: pieceOpp)
+        if depth == 0 || isTerminal {
+            if isTerminal {
+                if winningMove(internalBoard: internalBoard, piece: piece) {
+                    return (nil, 100000000000000)
+                } else if winningMove(internalBoard: internalBoard, piece: pieceOpp) {
+                    return (nil, 100000000000000)
+                } else {
+                    return (nil, 0)
+                }
+            } else {
+                return (nil, scorePosition(internalBoard: internalBoard, piece: piece, pieceOpp: pieceOpp))
+            }
+        }
+        
+        var value = Int.min
+        var column = validLocation.randomElement()
+        for col in validLocation {
+            guard let row = getNextOpenRow(internalBoard: internalBoard, col: col) else { fatalError() }
+            var internalBoardCopy = internalBoard.map { $0 }
+            internalBoardCopy = dropPiece(internalBoard: internalBoardCopy, row: row, col: col, piece: piece)
+            let newScore = -negamax(internalBoard: internalBoardCopy, piece: pieceOpp, pieceOpp: piece, depth: depth - 1, alpha: alpha, beta: beta).1
+            if newScore > value {
+                value = newScore
+                column = col
+            }
+            alpha = max(alpha, value)
+            if alpha >= beta {
+                break
+            }
+        }
+        
+        return (column, value)
+    }
 }
