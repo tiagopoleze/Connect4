@@ -20,6 +20,8 @@ class GameScene: SKScene {
     let playerPice = 1
     let aiPiece = 2
     
+    var turn = 0
+    
     override func didMove(to view: SKView) {
         blockSize = frame.height / CGFloat(rows)
         grid = Grid(blockSize: blockSize, rows: rows, cols: columns)!
@@ -31,9 +33,27 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        //        if player == 0 {
-        //            return
-        //        }
+        if turn == 1 {
+            let color: UIColor = .blue
+            let size = CGSize(width: blockSize, height: blockSize)
+            let gamePiece = SKSpriteNode(color: color, size: size)
+            let (col, score) = negamax(internalBoard: board, piece: aiPiece, pieceOpp: playerPice, depth: 5)
+            if let col = col {
+                if isValidPosition(internalBoard: board, col: col) {
+                    if let row = getNextOpenRow(internalBoard: board, col: col) {
+                        board = dropPiece(internalBoard: board, row: row, col: col, piece: aiPiece)
+                        gamePiece.position = grid.gridPosition(row: (rows-1-row), col: col)
+                        grid.addChild(gamePiece)
+                        turn = (turn + 1) % 2
+                        
+                        if winningMove(internalBoard: board, piece: aiPiece) {
+                            print("ai ganhou")
+                        }
+                    }
+                }
+            }
+            return
+        }
         let location = touches.first?.location(in: view)
         if location!.x >= blockSize/2 && location!.x <= (frame.width - blockSize/2) {
             let gamePiece = createPiece(location: location!, piece: playerPice)
@@ -42,7 +62,7 @@ class GameScene: SKScene {
     }
     
     private func createPiece(location: CGPoint, piece: Int) -> SKSpriteNode {
-        let color: UIColor = piece == 1 ? .red : .blue
+        let color: UIColor = .red
         let size = CGSize(width: blockSize, height: blockSize)
         let gamePiece = SKSpriteNode(color: color, size: size)
         let initialBlock = getBlock(with: location)
@@ -50,9 +70,10 @@ class GameScene: SKScene {
             if let row = getNextOpenRow(internalBoard: board, col: initialBlock.col) {
                 board = dropPiece(internalBoard: board, row: row, col: initialBlock.col, piece: playerPice)
                 gamePiece.position = grid.gridPosition(row: (rows-1-row), col: initialBlock.col)
+                turn = (turn + 1) % 2
                 
                 if winningMove(internalBoard: board, piece: piece) {
-                    print("ganhou")
+                    print("player ganhou")
                 }
             }
         }
@@ -196,8 +217,8 @@ class GameScene: SKScene {
         
         // Score Horizontal
         internalBoard.forEach { array in
-            for c in 0...columns-3 {
-                let window = Array(array[c...c+windowLength])
+            for c in 0...columns-4 {
+                let window = Array(array[c...c+windowLength-1])
                 score += evaluateWindow(window: window, piece: piece, pieceOpp: pieceOpp)
             }
         }
@@ -240,8 +261,7 @@ class GameScene: SKScene {
         return score
     }
     
-    private func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, depth: Int, alpha: Int, beta: Int) -> (Int?, Int) {
-        var alpha = alpha
+    private func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, depth: Int) -> (Int?, Int) {
         let validLocation = getValidLocations(internalBoard: internalBoard)
         let isTerminal = isTerminalNode(internalBoard: internalBoard, piece: piece, piece_opp: pieceOpp)
         if depth == 0 || isTerminal {
@@ -249,7 +269,7 @@ class GameScene: SKScene {
                 if winningMove(internalBoard: internalBoard, piece: piece) {
                     return (nil, 100000000000000)
                 } else if winningMove(internalBoard: internalBoard, piece: pieceOpp) {
-                    return (nil, 100000000000000)
+                    return (nil, -100000000000000)
                 } else {
                     return (nil, 0)
                 }
@@ -264,15 +284,15 @@ class GameScene: SKScene {
             guard let row = getNextOpenRow(internalBoard: internalBoard, col: col) else { fatalError() }
             var internalBoardCopy = internalBoard.map { $0 }
             internalBoardCopy = dropPiece(internalBoard: internalBoardCopy, row: row, col: col, piece: piece)
-            let newScore = -negamax(internalBoard: internalBoardCopy, piece: pieceOpp, pieceOpp: piece, depth: depth - 1, alpha: alpha, beta: beta).1
+            let newScore = -negamax(internalBoard: internalBoardCopy, piece: pieceOpp, pieceOpp: piece, depth: depth - 1).1
             if newScore > value {
                 value = newScore
                 column = col
             }
-            alpha = max(alpha, value)
-            if alpha >= beta {
-                break
-            }
+//            alpha = max(alpha, value)
+//            if alpha >= beta {
+//                break
+//            }
         }
         return (column, value)
     }
