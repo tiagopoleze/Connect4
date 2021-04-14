@@ -61,7 +61,7 @@ class GameScene: SKScene {
         }
     }
     
-    private func createPiece(location: CGPoint, piece: Int) -> SKSpriteNode {
+    func createPiece(location: CGPoint, piece: Int) -> SKSpriteNode {
         let color: UIColor = .red
         let size = CGSize(width: blockSize, height: blockSize)
         let gamePiece = SKSpriteNode(color: color, size: size)
@@ -80,24 +80,24 @@ class GameScene: SKScene {
         return gamePiece
     }
     
-    private func getBlock(with location: CGPoint) -> (row: Int, col:Int) {
+    func getBlock(with location: CGPoint) -> (row: Int, col:Int) {
         let col = Int((location.x - (blockSize / 2)) / blockSize)
         let row = Int(location.y / blockSize)
         return (row, col)
     }
     
     
-    private func dropPiece(internalBoard: [[Int]], row: Int, col: Int, piece: Int) -> [[Int]] {
+    func dropPiece(internalBoard: [[Int]], row: Int, col: Int, piece: Int) -> [[Int]] {
         var internalBoard = internalBoard.map { $0 }
         internalBoard[row][col] = piece
         return internalBoard
     }
     
-    private func isValidPosition(internalBoard: [[Int]], col: Int) -> Bool {
+    func isValidPosition(internalBoard: [[Int]], col: Int) -> Bool {
         return internalBoard[rows-1][col] == 0
     }
     
-    private func getNextOpenRow(internalBoard: [[Int]], col: Int) -> Int? {
+    func getNextOpenRow(internalBoard: [[Int]], col: Int) -> Int? {
         for r in 0..<rows {
             if internalBoard[r][col] == 0 {
                 return r
@@ -107,7 +107,7 @@ class GameScene: SKScene {
     }
     
     
-    private func winningMove(internalBoard: [[Int]], piece: Int) -> Bool {
+    func winningMove(internalBoard: [[Int]], piece: Int) -> Bool {
         // Check horizontal locations for win
         for c in 0..<columns-3 {
             for r in 0..<rows {
@@ -146,11 +146,11 @@ class GameScene: SKScene {
         return false
     }
     
-    private func createBoard() -> [[Int]] {
+    func createBoard() -> [[Int]] {
         return Array(repeating: Array(repeating: emptyPiece, count: columns), count: columns)
     }
     
-    private func evaluateWindow(window: [Int], piece: Int, pieceOpp: Int) -> Int {
+    func evaluateWindow(window: [Int], piece: Int, pieceOpp: Int) -> Int {
         var score = 0
         
         if window.reduce(0, { (result, index) -> Int in
@@ -185,11 +185,11 @@ class GameScene: SKScene {
         return score
     }
     
-    private func isTerminalNode(internalBoard: [[Int]], piece: Int, piece_opp: Int) -> Bool {
+    func isTerminalNode(internalBoard: [[Int]], piece: Int, piece_opp: Int) -> Bool {
         return winningMove(internalBoard: internalBoard, piece: piece) || winningMove(internalBoard: internalBoard, piece: piece_opp) || getValidLocations(internalBoard: internalBoard).count == 0
     }
     
-    private func getValidLocations(internalBoard: [[Int]]) -> [Int] {
+    func getValidLocations(internalBoard: [[Int]]) -> [Int] {
         var validLocations = [Int]()
         for col in 0..<columns {
             if isValidPosition(internalBoard: internalBoard, col: col) {
@@ -199,7 +199,7 @@ class GameScene: SKScene {
         return validLocations
     }
     
-    private func scorePosition(internalBoard: [[Int]], piece: Int, pieceOpp: Int) -> Int {
+    func scorePosition(internalBoard: [[Int]], piece: Int, pieceOpp: Int) -> Int {
         var score = 0
         
         // Score center column
@@ -261,7 +261,7 @@ class GameScene: SKScene {
         return score
     }
     
-    private func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, depth: Int) -> (Int?, Int) {
+    func negamax(internalBoard: [[Int]], piece: Int, pieceOpp: Int, depth: Int) -> (Int?, Int) {
         let validLocation = getValidLocations(internalBoard: internalBoard)
         let isTerminal = isTerminalNode(internalBoard: internalBoard, piece: piece, piece_opp: pieceOpp)
         if depth == 0 || isTerminal {
